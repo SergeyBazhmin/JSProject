@@ -16,7 +16,6 @@ class Bookmark extends Component {
             <article className="bookmark" onClick={(ev) => this.openBookmark(ev, details.url)}>
                 <h3 className="bookmarkCategory">{ details.category }</h3>
                 <h2 className="bookmarkTitle">{ details.title }</h2>
-                <p className="bookmarkUrl">{ details.url }</p>
             </article>
         );
     }

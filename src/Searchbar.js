@@ -11,6 +11,7 @@ class SearchBar extends Component
     }
     handleChange(event)
     {
+        this.props.handler(event.target.value);
         this.setState({text: event.target.value });
     }
     render()
