@@ -45,4 +45,5 @@ class Trie {
         return indices;
     }
 }
-export const trie = new Trie();
+export const titleTrie = new Trie();
+export const categoryTrie = new Trie();

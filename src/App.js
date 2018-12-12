@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import Bookmark from './Bookmark';
 import SearchBar from './Searchbar';
-import { trie } from './Trie';
+import { titleTrie, categoryTrie } from './Trie';
 class App extends Component {
     constructor(props) {
         super(props);
@@ -27,7 +27,8 @@ class App extends Component {
                         url: object.url,
                         id: object.id
                     });
-                    trie.addWord(object.title, object.id);
+                    titleTrie.addWord(object.title.toLowerCase(), object.id);
+                    categoryTrie.addWord(folder.toLowerCase(), object.id);
                 }
             };
             lookUp(root, null);
@@ -84,30 +85,54 @@ class App extends Component {
         });
     }
 
-    handleSearch(searchValue)
+
+    __getAllWithPrefix(trie, prefix)
     {
-        if (searchValue === '')
-        {
-            this.setState({
-                currentBookmarks: this.state.defaultBookmarks
-            });
-        }
+        if (prefix === '')
+            return this.state.defaultBookmarks.reduce((obj, val) => {
+                obj[val.id] = val.id;
+                return obj;
+            },{});
         else
         {
-            const indices = trie.getAllWithPrefix(searchValue).reduce((acc, cur) => {
+            const indices = trie.getAllWithPrefix(prefix).reduce((acc, cur) => {
                 acc[cur] = cur;
                 return acc;
             }, {});
-            const samples = [];
-            for (let bookmark of this.state.defaultBookmarks)
-            {
-                if (indices[bookmark.id] !== undefined)
-                    samples.push(bookmark);
-            }
-            this.setState({
-                currentBookmarks: samples
-            });
+            const samples = this.state.defaultBookmarks
+                                            .filter(obj => obj.id in indices)
+                                            .reduce((obj, bookmark) => {
+                                                obj[bookmark.id] = bookmark.id;
+                                                return obj;
+                                            }, {});
+            return samples;
         }
+    }
+
+    __handleCategories()
+    {
+        const categoryValue = document.getElementById('categoryBar').value.toLowerCase();
+        return this.__getAllWithPrefix(categoryTrie, categoryValue);
+    }
+    __handleTitles()
+    {
+        const titleValue = document.getElementById('titleBar').value.toLowerCase();
+        return this.__getAllWithPrefix(titleTrie, titleValue);
+    }
+    handleSearch()
+    {
+        const categoryIndices = this.__handleCategories();
+        const titleIndices = this.__handleTitles();
+        const intersection = Object.keys(categoryIndices)
+                                        .filter(key => key in titleIndices)
+                                        .reduce((obj, id) =>{
+                                            obj[id] = id;
+                                            return obj;
+                                        }, {});
+        const currentBookmarks = this.state.defaultBookmarks.filter(bookmark => bookmark.id in intersection);
+        this.setState({
+            currentBookmarks: currentBookmarks
+        });
     }
 
     render() {
@@ -117,13 +142,10 @@ class App extends Component {
                 <div>
                     <div className='header'>
                         <div className='container'>
-                            <SearchBar handler={ (value) => this.handleSearch(value) }/>
+                            <SearchBar placeholder = 'Category...' handler={ () => this.handleSearch() } id='categoryBar'/>
+                            <SearchBar placeholder = 'Looking for...' handler={ () => this.handleSearch() } id='titleBar'/>
                             <div className ='rightSide'>
-                                <button id='actionButton' onClick={(e) => this.addEveryTabAsBookmarkAndClose(e)}>COOL</button>
-                                <select id= 'selectCategory'>
-                                    <option>lol</option>
-                                    <option>kek</option>
-                                </select>
+                                <button id='actionButton' onClick={(e) => this.addEveryTabAsBookmarkAndClose(e)}>Close</button>
                             </div>
                         </div>
                     </div>
