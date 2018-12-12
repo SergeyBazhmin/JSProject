@@ -35,7 +35,7 @@ class App extends Component {
             this.setState( {
                 defaultBookmarks: elements,
                 currentBookmarks: elements
-             } );
+            }, () => this.handleSearch() );
         });
     }
 
