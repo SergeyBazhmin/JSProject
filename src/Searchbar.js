@@ -17,9 +17,10 @@ class SearchBar extends Component
     render()
     {
         return (
-                <input id='searchBar'
+                <input className='searchBar'
+                    id = {this.props.id}
                     type="text"
-                    placeholder="Looking for..."
+                    placeholder={this.props.placeholder}
                     value={this.state.text}
                     onChange={(ev) => this.handleChange(ev)}
                     />
