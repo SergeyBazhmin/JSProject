@@ -85,6 +85,10 @@ class App extends Component {
         });
     }
 
+    reorganizeBookmarks(ev) {
+
+    }
+
 
     __getAllWithPrefix(trie, prefix)
     {
@@ -140,13 +144,12 @@ class App extends Component {
         {
             return (
                 <div>
+                    <button className='actionButton' onClick={(e) => this.addEveryTabAsBookmarkAndClose(e)}>Close</button>
+                    <button className='actionButton' onClick={(e) =>{ this.reorganizeBookmarks(e) }}>Reorganize</button>
                     <div className='header'>
                         <div className='container'>
                             <SearchBar placeholder = 'Category...' handler={ () => this.handleSearch() } id='categoryBar'/>
                             <SearchBar placeholder = 'Looking for...' handler={ () => this.handleSearch() } id='titleBar'/>
-                            <div className ='rightSide'>
-                                <button id='actionButton' onClick={(e) => this.addEveryTabAsBookmarkAndClose(e)}>Close</button>
-                            </div>
                         </div>
                     </div>
                     <div className="content">
@@ -162,3 +165,9 @@ class App extends Component {
     }
 }
 export default App;
+
+/*
+<div className ='rightSide'>
+    <button id='actionButton' onClick={(e) => this.addEveryTabAsBookmarkAndClose(e)}>Close</button>
+</div>
+*/
