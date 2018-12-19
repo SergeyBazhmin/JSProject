@@ -11,17 +11,22 @@ class App extends Component {
         this.state = {
             defaultBookmarks: null,
             currentBookmarks: null,
-            showPopup: false
+            showPopup: false,
+            categoryFolderIds: null
         };
+        chrome.bookmarks.onCreated.addListener(this.onBookmarkAdded());
     }
 
     __updateState() {
         chrome.bookmarks.getTree((bookmarks) => {
             const root = bookmarks[0];
             const elements = [];
+            const categories = {};
             const lookUp = (object, folder) => {
-                if ( 'children' in object)
+                if ( 'children' in object) {
+                    categories[object.title] = object.id;
                     object.children.forEach(child => lookUp(child, object.title));
+                }
                 else
                 {
                     elements.push({
@@ -38,8 +43,13 @@ class App extends Component {
             this.setState( {
                 defaultBookmarks: elements,
                 currentBookmarks: elements,
+                categoryFolderIds: categories
             }, () => this.handleSearch() );
         });
+    }
+
+    onBookmarkAdded(id, bookmark){
+
     }
 
     componentDidMount() {
@@ -88,10 +98,53 @@ class App extends Component {
         });
     }
 
-    reorganizeBookmarks() {
-
+    onW2VSuccess(result, bookmark){
+        console.log(result);
+        this.moveBookmarkToNewCategory(bookmark, result['prediction']);
     }
 
+    onW2VError(error){
+        console.log(error);
+    }
+
+    tryCreateCategoryFolder(category){
+        try {
+            chrome.bookmarks.create({'title': category});
+        } catch(Exception){
+            console.log(Exception.message);
+        }
+    }
+
+
+    reorganizeBookmarks(categories) {
+        categories.filter(c => !(c in this.state.categoryFolderIds)).forEach(category => {
+            this.tryCreateCategoryFolder(category);
+        });
+        this.state.currentBookmarks.forEach(bookmark => {
+            this.getCategoryW2V(bookmark.title, categories)
+                .then(res => res.json())
+                .then(result => this.onW2VSuccess(result, bookmark), error => this.onW2VError(error));
+        });
+        this.__updateState()
+    }
+
+    moveBookmarkToNewCategory(bookmark, newCategory){
+        //this.state.currentBookmarks[index].category = newCategory;
+        chrome.bookmarks.move(bookmark.id, {parentId: this.state.categoryFolderIds[newCategory]});
+    }
+
+    getCategoryW2V(query, categories){
+        return fetch('http://35.205.191.219:5000/predict-category', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: query,
+                categories: categories,
+            })
+        })
+    }
 
     __getAllWithPrefix(trie, prefix)
     {
@@ -164,7 +217,8 @@ class App extends Component {
                         : null
                     }
                     <button className='floating' onClick={(e) => this.addEveryTabAsBookmarkAndClose() }>Close</button>
-                    <button className='floating' onClick={(e) =>{ this.reorganizeBookmarks() }}>Reorganize</button>
+                    <button className='floating' onClick={(e) =>{ chrome.storage.sync.get('categories', data => {
+                        this.reorganizeBookmarks(data.categories) })}}>Reorganize</button>
                     <button className='floating' onClick={(e) =>{ this.showCategoryList() }}>Categories</button>
                     <div className='header'>
                         <div className='container'>
