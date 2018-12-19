@@ -6,18 +6,25 @@ import { titleTrie, categoryTrie } from './Trie';
 import CategoryMenu from './CategoryMenu';
 
 class App extends Component {
+    categoryFolderIds = {};
     constructor(props) {
         super(props);
         this.state = {
             defaultBookmarks: null,
             currentBookmarks: null,
-            showPopup: false,
-            categoryFolderIds: null
+            showPopup: false
         };
-        chrome.bookmarks.onCreated.addListener(this.onBookmarkAdded());
+        chrome.bookmarks.onCreated.addListener((id, bookmark) => {
+            chrome.storage.sync.get('categories', data => {
+                this.onBookmarkAdded(id, bookmark, data.categories)
+            });
+        });
     }
 
     __updateState() {
+        chrome.storage.sync.get('categories', data => {
+            this.tryCreateCategoryFolders(data.categories);
+        });
         chrome.bookmarks.getTree((bookmarks) => {
             const root = bookmarks[0];
             const elements = [];
@@ -40,16 +47,20 @@ class App extends Component {
                 }
             };
             lookUp(root, null);
+            this.categoryFolderIds = categories;
+
             this.setState( {
                 defaultBookmarks: elements,
                 currentBookmarks: elements,
-                categoryFolderIds: categories
             }, () => this.handleSearch() );
         });
     }
 
-    onBookmarkAdded(id, bookmark){
-
+    onBookmarkAdded(id, bookmark, categories){
+        if (!bookmark.hasOwnProperty('url') || bookmark.url === null) return;
+        this.getCategoryW2V(bookmark.title, categories)
+            .then(res => res.json())
+            .then(result => {this.moveBookmarkToNewCategory(bookmark, result.category)});
     }
 
     componentDidMount() {
@@ -64,7 +75,7 @@ class App extends Component {
         )
     }
 
-    addEveryTabAsBookmarkAndClose()
+    addEveryTabAsBookmarkAndClose(categories)
     {
         chrome.bookmarks.getTree((bookmarks) => {
             const root = bookmarks[0];
@@ -78,19 +89,19 @@ class App extends Component {
             lookUp(root);
             chrome.tabs.query({}, (tabs) => {
                 const addNew = [];
-                tabs.forEach((el) => {
-                    if (elements[el.title] === undefined)
-                        addNew.push({title: el.title, url: el.url});
+                tabs.filter(el => el.title === undefined).forEach((el) => {
+                    this.getCategoryW2V()
+                        .then(res => res.json())
+                        .then(
+                            result => {addNew.push({title: el.title, url: el.url, parentId: categories[result.category]})},
+                            error => this.onW2VError(error));
                 });
                 addNew.forEach((bookmark) => {
                     chrome.bookmarks.create(bookmark,  (res) => {});
                 });
                 chrome.tabs.getSelected(null, (current) =>{
                     const toRemove = [];
-                    tabs.forEach((t) => {
-                        if (current.id !== t.id)
-                            toRemove.push(t.id);
-                    });
+                    tabs.filter(t => current.id !== t.id).forEach((t) => {toRemove.push(t.id);});
                     chrome.tabs.remove(toRemove, () => {});
                 });
                 this.__updateState();
@@ -98,39 +109,30 @@ class App extends Component {
         });
     }
 
-    onW2VSuccess(result, bookmark){
-        console.log(result);
-        this.moveBookmarkToNewCategory(bookmark, result['prediction']);
-    }
-
     onW2VError(error){
         console.log(error);
     }
 
-    tryCreateCategoryFolder(category){
-        try {
+    tryCreateCategoryFolders(categories){
+        categories.filter(c => !(c in this.categoryFolderIds)).forEach(category => {
             chrome.bookmarks.create({'title': category});
-        } catch(Exception){
-            console.log(Exception.message);
-        }
+        });
     }
 
-
     reorganizeBookmarks(categories) {
-        categories.filter(c => !(c in this.state.categoryFolderIds)).forEach(category => {
-            this.tryCreateCategoryFolder(category);
-        });
         this.state.currentBookmarks.forEach(bookmark => {
             this.getCategoryW2V(bookmark.title, categories)
                 .then(res => res.json())
-                .then(result => this.onW2VSuccess(result, bookmark), error => this.onW2VError(error));
+                .then(
+                    result => this.moveBookmarkToNewCategory(bookmark, result['prediction']),
+                    error => this.onW2VError(error));
         });
         this.__updateState()
     }
 
     moveBookmarkToNewCategory(bookmark, newCategory){
         //this.state.currentBookmarks[index].category = newCategory;
-        chrome.bookmarks.move(bookmark.id, {parentId: this.state.categoryFolderIds[newCategory]});
+        chrome.bookmarks.move(bookmark.id, {parentId: this.categoryFolderIds[newCategory]});
     }
 
     getCategoryW2V(query, categories){
@@ -205,6 +207,7 @@ class App extends Component {
         this.setState({
             showPopup: !this.state.showPopup
         });
+        this.__updateState()
     }
 
     render() {
@@ -216,7 +219,8 @@ class App extends Component {
                         <CategoryMenu handler = { (ev) => this.onListClosed() }/>
                         : null
                     }
-                    <button className='floating' onClick={(e) => this.addEveryTabAsBookmarkAndClose() }>Close</button>
+                    <button className='floating' onClick={(e) => chrome.storage.sync.get('categories', data => {
+                        this.addEveryTabAsBookmarkAndClose(data.categories) }) }>Close</button>
                     <button className='floating' onClick={(e) =>{ chrome.storage.sync.get('categories', data => {
                         this.reorganizeBookmarks(data.categories) })}}>Reorganize</button>
                     <button className='floating' onClick={(e) =>{ this.showCategoryList() }}>Categories</button>
