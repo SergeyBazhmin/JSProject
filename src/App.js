@@ -3,12 +3,15 @@ import React, { Component } from 'react';
 import Bookmark from './Bookmark';
 import SearchBar from './Searchbar';
 import { titleTrie, categoryTrie } from './Trie';
+import CategoryMenu from './CategoryMenu';
+
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
             defaultBookmarks: null,
             currentBookmarks: null,
+            showPopup: false
         };
     }
 
@@ -34,7 +37,7 @@ class App extends Component {
             lookUp(root, null);
             this.setState( {
                 defaultBookmarks: elements,
-                currentBookmarks: elements
+                currentBookmarks: elements,
             }, () => this.handleSearch() );
         });
     }
@@ -51,7 +54,7 @@ class App extends Component {
         )
     }
 
-    addEveryTabAsBookmarkAndClose(ev)
+    addEveryTabAsBookmarkAndClose()
     {
         chrome.bookmarks.getTree((bookmarks) => {
             const root = bookmarks[0];
@@ -85,7 +88,7 @@ class App extends Component {
         });
     }
 
-    reorganizeBookmarks(ev) {
+    reorganizeBookmarks() {
 
     }
 
@@ -138,14 +141,31 @@ class App extends Component {
             currentBookmarks: currentBookmarks
         });
     }
+    showCategoryList()
+    {
+        this.setState({
+            showPopup: !this.state.showPopup
+        });
+    }
+    onListClosed()
+    {
+        this.setState({
+            showPopup: !this.state.showPopup
+        });
+    }
 
     render() {
         if (this.state.defaultBookmarks)
         {
             return (
                 <div>
-                    <button className='actionButton' onClick={(e) => this.addEveryTabAsBookmarkAndClose(e)}>Close</button>
-                    <button className='actionButton' onClick={(e) =>{ this.reorganizeBookmarks(e) }}>Reorganize</button>
+                    { this.state.showPopup ?
+                        <CategoryMenu handler = { (ev) => this.onListClosed() }/>
+                        : null
+                    }
+                    <button className='floating' onClick={(e) => this.addEveryTabAsBookmarkAndClose() }>Close</button>
+                    <button className='floating' onClick={(e) =>{ this.reorganizeBookmarks() }}>Reorganize</button>
+                    <button className='floating' onClick={(e) =>{ this.showCategoryList() }}>Categories</button>
                     <div className='header'>
                         <div className='container'>
                             <SearchBar placeholder = 'Category...' handler={ () => this.handleSearch() } id='categoryBar'/>
@@ -165,9 +185,3 @@ class App extends Component {
     }
 }
 export default App;
-
-/*
-<div className ='rightSide'>
-    <button id='actionButton' onClick={(e) => this.addEveryTabAsBookmarkAndClose(e)}>Close</button>
-</div>
-*/

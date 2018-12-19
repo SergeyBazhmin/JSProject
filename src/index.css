@@ -19,17 +19,19 @@ body {
     outline: none;
 }
 
-.actionButton {
-    float:left;
+button {
     text-decoration: none;
     color: white;
     background: #F2385A;
-    font-size: 18px;
-    border-radius: 10px;
     transition: all 0.2s;
     outline:none;
 }
-.actionButton:hover {
+.floating {
+    float: left;
+    font-size: 18px;
+    border-radius: 10px;
+}
+button:hover {
     background-color: #397CAC;
     border-color: #326E99;
 }
@@ -120,8 +122,61 @@ body {
     line-height: 1.75rem;
 }
 
-.bookmarkUrl {
-    color: #666;
-    line-height: 1.5rem;
-    font-size: 0.875rem;
+.title {
+    padding: 8px;
+}
+
+.popup {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    background-color: rgba(0,0,0, 0.5);
+    border-radius: 10px;
+}
+.popupInner {
+    position: absolute;
+    border-radius: 2px;
+    border: 1px solid lightgrey;
+    left: 15%;
+    right: 15%;
+    top: 15%;
+    margin: auto;
+    background: white;
+}
+
+.category {
+    border: 1px solid lightgrey;
+    border-radius: 2px;
+    padding: 8px;
+    margin-bottom: 8px;
+    font-size: 20px;
+}
+
+.categoryList {
+    padding-top: 5px;
+    width: 100%;
+    height: 300px;
+    overflow-y: scroll;
+}
+
+.deleteCategory {
+    border-radius: 5px;
+    float: right;
+}
+
+.addPopup {
+    padding-top: 10px;
+    height: 50px;
+}
+.addPopupElement{
+    font-size: 20px;
+}
+
+.title {
+    font-size: 20px;
 }
