@@ -11,11 +11,12 @@ chrome.runtime.onInstalled.addListener(() => {
         'cooking',
         'games',
         'music'
-    ]
+    ];
     chrome.storage.sync.set({'categories': defaultCategories}, function() {
           console.log('categories have been set to default');
     });
 });
+
 chrome.bookmarks.onCreated.addListener((id, bookmark) => {
-    console.log(`created a bookmark ${id}`);
+    //OnBookMarkAddedWrapper(id, bookmark, data.categories);
 });

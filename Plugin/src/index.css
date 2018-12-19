@@ -22,14 +22,14 @@ body {
 button {
     text-decoration: none;
     color: white;
-    background: #F2385A;
+    background: #33AB9F;
     transition: all 0.2s;
     outline:none;
 }
 .floating {
     float: left;
     font-size: 18px;
-    border-radius: 10px;
+    border-radius: 1px;
 }
 button:hover {
     background-color: #397CAC;

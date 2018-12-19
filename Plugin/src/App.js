@@ -6,25 +6,17 @@ import { titleTrie, categoryTrie } from './Trie';
 import CategoryMenu from './CategoryMenu';
 
 class App extends Component {
-    categoryFolderIds = {};
+    static categoryFolderIds = {};
     constructor(props) {
         super(props);
         this.state = {
             defaultBookmarks: null,
             currentBookmarks: null,
-            showPopup: false
+            showPopup: false,
         };
-        chrome.bookmarks.onCreated.addListener((id, bookmark) => {
-            chrome.storage.sync.get('categories', data => {
-                this.onBookmarkAdded(id, bookmark, data.categories)
-            });
-        });
     }
 
     __updateState() {
-        chrome.storage.sync.get('categories', data => {
-            this.tryCreateCategoryFolders(data.categories);
-        });
         chrome.bookmarks.getTree((bookmarks) => {
             const root = bookmarks[0];
             const elements = [];
@@ -47,8 +39,7 @@ class App extends Component {
                 }
             };
             lookUp(root, null);
-            this.categoryFolderIds = categories;
-
+            App.categoryFolderIds = categories;
             this.setState( {
                 defaultBookmarks: elements,
                 currentBookmarks: elements,
@@ -56,11 +47,12 @@ class App extends Component {
         });
     }
 
-    onBookmarkAdded(id, bookmark, categories){
+    static onBookmarkAdded(id, bookmark, categories){
         if (!bookmark.hasOwnProperty('url') || bookmark.url === null) return;
+        alert('bookmark');
         this.getCategoryW2V(bookmark.title, categories)
             .then(res => res.json())
-            .then(result => {this.moveBookmarkToNewCategory(bookmark, result.category)});
+            .then(result => {App.moveBookmarkToNewCategory(bookmark, result.category)});
     }
 
     componentDidMount() {
@@ -90,11 +82,11 @@ class App extends Component {
             chrome.tabs.query({}, (tabs) => {
                 const addNew = [];
                 tabs.filter(el => el.title === undefined).forEach((el) => {
-                    this.getCategoryW2V()
+                    App.getCategoryW2V()
                         .then(res => res.json())
                         .then(
                             result => {addNew.push({title: el.title, url: el.url, parentId: categories[result.category]})},
-                            error => this.onW2VError(error));
+                            error => App.onW2VError(error));
                 });
                 addNew.forEach((bookmark) => {
                     chrome.bookmarks.create(bookmark,  (res) => {});
@@ -102,40 +94,41 @@ class App extends Component {
                 chrome.tabs.getSelected(null, (current) =>{
                     const toRemove = [];
                     tabs.filter(t => current.id !== t.id).forEach((t) => {toRemove.push(t.id);});
-                    chrome.tabs.remove(toRemove, () => {});
+                    chrome.tabs.remove(toRemove, () => {this.__updateState()});
                 });
-                this.__updateState();
             });
         });
     }
 
-    onW2VError(error){
+    static onW2VError(error){
         console.log(error);
     }
 
-    tryCreateCategoryFolders(categories){
-        categories.filter(c => !(c in this.categoryFolderIds)).forEach(category => {
-            chrome.bookmarks.create({'title': category});
+    tryCreateCategoryFolders(){
+        chrome.storage.sync.get('categories', data => {
+            data.categories.filter(c => !(c in this.state.categoryFolderIds)).forEach(category => {
+                chrome.bookmarks.create({'title': category}, res => {this.__updateState()});
+            });
         });
     }
 
     reorganizeBookmarks(categories) {
         this.state.currentBookmarks.forEach(bookmark => {
-            this.getCategoryW2V(bookmark.title, categories)
+            App.getCategoryW2V(bookmark.title, categories)
                 .then(res => res.json())
                 .then(
-                    result => this.moveBookmarkToNewCategory(bookmark, result['prediction']),
-                    error => this.onW2VError(error));
+                    result => App.moveBookmarkToNewCategory(bookmark, result['prediction']),
+                    error => App.onW2VError(error));
         });
         this.__updateState()
     }
 
-    moveBookmarkToNewCategory(bookmark, newCategory){
+    static moveBookmarkToNewCategory(bookmark, newCategory){
         //this.state.currentBookmarks[index].category = newCategory;
-        chrome.bookmarks.move(bookmark.id, {parentId: this.categoryFolderIds[newCategory]});
+        chrome.bookmarks.move(bookmark.id, {parentId: App.categoryFolderIds[newCategory]});
     }
 
-    getCategoryW2V(query, categories){
+    static getCategoryW2V(query, categories){
         return fetch('http://35.205.191.219:5000/predict-category', {
             method: 'POST',
             headers: {
@@ -207,7 +200,7 @@ class App extends Component {
         this.setState({
             showPopup: !this.state.showPopup
         });
-        this.__updateState()
+        this.tryCreateCategoryFolders();
     }
 
     render() {
