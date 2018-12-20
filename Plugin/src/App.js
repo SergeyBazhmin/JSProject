@@ -80,24 +80,22 @@ class App extends Component {
             };
             lookUp(root);
             chrome.tabs.query({}, (tabs) => {
-                const addNew = [];
-                tabs.filter(el => el.title === undefined).forEach((el) => {
-                    App.getCategoryW2V()
+                tabs.filter(el => elements[el.title] === undefined).forEach((el) => {
+                    /*App.getCategoryW2V()
                         .then(res => res.json())
                         .then(
                             result => {addNew.push({title: el.title, url: el.url, parentId: categories[result.category]})},
-                            error => App.onW2VError(error));
-                });
-                addNew.forEach((bookmark) => {
-                    chrome.bookmarks.create(bookmark,  (res) => {});
+                            error => App.onW2VError(error));*/
+                    chrome.bookmarks.create({title: el.title, url: el.url},  (res) => {this.__updateState();});
                 });
                 chrome.tabs.getSelected(null, (current) =>{
                     const toRemove = [];
                     tabs.filter(t => current.id !== t.id).forEach((t) => {toRemove.push(t.id);});
-                    chrome.tabs.remove(toRemove, () => {this.__updateState()});
+                    chrome.tabs.remove(toRemove, () => {});
                 });
             });
         });
+
     }
 
     static onW2VError(error){
@@ -106,7 +104,7 @@ class App extends Component {
 
     tryCreateCategoryFolders(){
         chrome.storage.sync.get('categories', data => {
-            data.categories.filter(c => !(c in this.state.categoryFolderIds)).forEach(category => {
+            data.categories.filter(c => !(c in App.categoryFolderIds)).forEach(category => {
                 chrome.bookmarks.create({'title': category}, res => {this.__updateState()});
             });
         });
