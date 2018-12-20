@@ -53,11 +53,13 @@ export default class CategoryMenu extends Component {
             <div className = 'popup'>
                 <div className = 'popupInner'>
                     { this.state.showInput ? <AddPopup addHandler = { (name) => this.addCategory(name) } />: null}
-                    <div className='title'>
+                    <span className='title'>
                         <h3>My categories</h3>
-                    </div>
+                    </span>
+                    <span className='upperContainer'>
                     <button className='floating' onClick = { (ev) => { this.showInputField() } }>Add</button>
                     <button className = 'floating' onClick = { (ev) => this.props.handler() }>Close</button>
+                    </span>
                     { this.state.categories ?
                         <div className='categoryList'>
                             { this.state.categories.map((el, idx) => <Category key = {idx} category = {el} handler = { () => this.deleteCategory(el) }/>) }

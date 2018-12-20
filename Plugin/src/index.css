@@ -1,17 +1,32 @@
 body {
-  background: #F3F3F3;
-  padding: 10px;
+  background: #F4F4F4;
   min-width:  500px;
   font-family: "Open Sans", sans-serif;
 }
 
+.upperContainer {
+    background: #00695f;
+    display: flex;
+    justify-content: center;
+    height: 10%;
+    margin:0;
+    color: white;
+}
+
 .header{
-    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
 }
 
 .container {
-    width: 400px;
-    margin: 0 auto;
+    width: 90%;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .rightSide {
@@ -22,36 +37,38 @@ body {
 button {
     text-decoration: none;
     color: white;
-    background: #33AB9F;
-    transition: all 0.2s;
+    background: #009688;
     outline:none;
+    border: none;
 }
 .floating {
-    float: left;
-    font-size: 18px;
-    border-radius: 1px;
+    float: top;
+    font-size: 16px;
+    margin: 10px;
+    padding: 7px;
+    width: 30%;
 }
 button:hover {
-    background-color: #397CAC;
-    border-color: #326E99;
+    background-color: #33ab9f;
 }
 
 #selectCategory {
-    margin-top: 2px;
+    margin: 10px;
     float: left;
-    margin-left: 5px;
-    border-radius: 5px;
+    border-radius: 2px;
     outline: none;
 }
+
 .searchBar {
-    padding: 5px;
     -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
     box-sizing: border-box;
-    height: 30px;
+    height: 35px;
     width: 100%;
-    margin-top: 2px;
-    float: left;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    float: top;
     border-radius: 6px;
     outline: none;
 }
@@ -59,6 +76,7 @@ button:hover {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  color: white;
   width: 90%;
   max-width: 960px;
   margin: 0 auto;
@@ -85,7 +103,8 @@ button:hover {
 }
 
 .bookmark {
-    background: #FFF;
+    background: #33ab9f;
+    color: white;
     margin: 0 0 20px;
     padding: 20px;
     border-radius: 2px;;
@@ -93,8 +112,7 @@ button:hover {
     transition: 0.3s ease;
 }
 .bookmark:hover {
-    background-color: #B8BFC7;
-    border-color: #AAB3BB;
+    background-color: #00695f;
  }
 .bookmark:active {
     box-shadow: none;
@@ -106,7 +124,7 @@ button:hover {
     display: inline-block;
     padding: 8px 10px;
     margin: 0 0 10px;
-    background-color: blue;
+    background-color: #f50057;
     color: #FFF;
     font-size: 0.75rem;
     font-weight: 600;
@@ -116,10 +134,10 @@ button:hover {
 
 .bookmarkTitle {
     margin: 0 0 10px;
-    color: #444;
     font-size: 1.25rem;
     font-weight: 600;
     line-height: 1.75rem;
+    color: white;
 }
 
 .title {
@@ -135,32 +153,41 @@ button:hover {
     right: 0;
     bottom: 0;
     margin: auto;
+    padding: 5px;
     background-color: rgba(0,0,0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
     border-radius: 10px;
 }
+
 .popupInner {
     position: absolute;
-    border-radius: 2px;
-    border: 1px solid lightgrey;
+    border-bottom: #33ab9f;
+    border-bottom-width: 3px;
     left: 15%;
     right: 15%;
     top: 15%;
     margin: auto;
-    background: white;
+    background: #33ab9f;
 }
 
 .category {
-    border: 1px solid lightgrey;
-    border-radius: 2px;
-    padding: 8px;
-    margin-bottom: 8px;
+    margin: 5px;
+    padding: 5px;
+    height: 30px;
     font-size: 20px;
+    background: #f73378;
+    color:white;
 }
 
 .categoryList {
-    padding-top: 5px;
-    width: 100%;
-    height: 300px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    width: 95%;
+    height: 350px;
     overflow-y: scroll;
 }
 
@@ -174,9 +201,14 @@ button:hover {
     height: 50px;
 }
 .addPopupElement{
-    font-size: 20px;
+    font-size: 16px;
 }
 
 .title {
-    font-size: 20px;
+    background: #00695f;
+    font-size: 30px;
+    color:white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

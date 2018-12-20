@@ -19,7 +19,7 @@ export default class AddPopup extends Component {
         return (
             <div className='popup'>
                 <div className='popupInner'>
-                    <div className='addPopup'>
+                    <div className='addPopup, upperContainer'>
                         <input
                         className='addPopupElement'
                         type='text'
@@ -27,7 +27,7 @@ export default class AddPopup extends Component {
                         text = { this.state.text }
                         onChange = { (ev) => this.handleChange(ev) }
                          />
-                        <button className='addPopupElement' onClick = { (ev) => { this.props.addHandler(this.state.text) }}>OK</button>
+                        <button className='floating' onClick = { (ev) => { this.props.addHandler(this.state.text) }}>OK</button>
                     </div>
                 </div>
             </div>

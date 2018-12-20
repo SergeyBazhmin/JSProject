@@ -50,7 +50,7 @@ class App extends Component {
     static onBookmarkAdded(id, bookmark, categories){
         if (!bookmark.hasOwnProperty('url') || bookmark.url === null) return;
         alert('bookmark');
-        this.getCategoryW2V(bookmark.title, categories)
+        App.getCategoryW2V(bookmark.title, categories)
             .then(res => res.json())
             .then(result => {App.moveBookmarkToNewCategory(bookmark, result.category)});
     }
@@ -207,22 +207,25 @@ class App extends Component {
         if (this.state.defaultBookmarks)
         {
             return (
-                <div>
+                <div >
                     { this.state.showPopup ?
                         <CategoryMenu handler = { (ev) => this.onListClosed() }/>
                         : null
                     }
-                    <button className='floating' onClick={(e) => chrome.storage.sync.get('categories', data => {
-                        this.addEveryTabAsBookmarkAndClose(data.categories) }) }>Close</button>
-                    <button className='floating' onClick={(e) =>{ chrome.storage.sync.get('categories', data => {
-                        this.reorganizeBookmarks(data.categories) })}}>Reorganize</button>
-                    <button className='floating' onClick={(e) =>{ this.showCategoryList() }}>Categories</button>
-                    <div className='header'>
-                        <div className='container'>
+                    <span className='upperContainer'>
+                        <button className='floating' onClick={(e) => chrome.storage.sync.get('categories', data => {
+                            this.addEveryTabAsBookmarkAndClose(data.categories) }) }>Close</button>
+                        <button className='floating' onClick={(e) =>{ chrome.storage.sync.get('categories', data => {
+                            this.reorganizeBookmarks(data.categories) })}}>Reorganize</button>
+                        <button className='floating' onClick={(e) =>{ this.showCategoryList() }}>Categories</button>
+                    </span>
+                    <span className='header'>
+                        <span className='container'>
                             <SearchBar placeholder = 'Category...' handler={ () => this.handleSearch() } id='categoryBar'/>
                             <SearchBar placeholder = 'Looking for...' handler={ () => this.handleSearch() } id='titleBar'/>
-                        </div>
-                    </div>
+                        </span>
+                    </span>
+
                     <div className="content">
                         {this.state.currentBookmarks.map((el, idx) => this.renderBookmark(idx))}
                     </div>
